@@ -7,7 +7,6 @@ app.use(cors());
 
 const PORT = process.env.PORT || 3000;
 
-// This endpoint is what your React App (App.jsx) calls
 app.get('/get-video', async (req, res) => {
     const { id, type, season, episode } = req.query;
 
@@ -16,25 +15,26 @@ app.get('/get-video', async (req, res) => {
     }
 
     try {
-        // We use a provider that resolves TMDB IDs into direct streams.
-        // For TV shows, we include season and episode. For movies, just the ID.
+        // Updated provider link for 2026
         const apiUrl = type === 'tv' 
             ? `https://api.vegamovies.dev/source/${id}/${season}/${episode}` 
             : `https://api.vegamovies.dev/source/${id}`;
 
         const response = await fetch(apiUrl);
+        
+        if (!response.ok) throw new Error('Provider down');
+        
         const data = await response.json();
 
         if (data && data.url) {
-            // Success: Return the real HD stream URL to your frontend
             res.json({ url: data.url });
         } else {
-            // Fallback: If the source isn't found
-            res.status(404).json({ error: "Source not found for this title." });
+            res.status(404).json({ error: "No HD sources found for this title." });
         }
     } catch (error) {
-        console.error("Backend Scraper Error:", error);
-        res.status(500).json({ error: "The scraper is currently offline or sleeping." });
+        console.error("Backend Error:", error);
+        // This is the message you are seeing in the frontend
+        res.status(500).json({ error: "The server is waking up... wait 30 seconds." });
     }
 });
 
